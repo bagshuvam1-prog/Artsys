@@ -1,2 +1,2 @@
 # Artsys
-Art Gallary
+Art Gallary to post art
