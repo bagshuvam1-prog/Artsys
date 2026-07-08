@@ -39,3 +39,19 @@ header a {
 .artwork-card h3, .artwork-card p {
   margin: 8px 12px;
 }
+.detail-image {
+  max-width: 500px;
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  margin: 20px;
+}
+
+.artist-name {
+  font-weight: bold;
+  color: #555;
+}
+
+#artwork-detail {
+  padding: 20px;
+}
