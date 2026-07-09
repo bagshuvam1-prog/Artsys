@@ -1,34 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --ink: #1C1C1A;
+  --ink-soft: #6B6B65;
+  --accent: #8B3A3A;
+  --hairline: #E3E1DA;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
-  color: #222;
+  background: var(--bg);
+  color: var(--ink);
 }
 
 header {
-  padding: 20px;
-  background: #1a1a1a;
-  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 0.5px solid var(--hairline);
+  background: var(--bg);
 }
 
-header a {
-  color: #9ec5ff;
+header .wordmark {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
   text-decoration: none;
+}
+
+header nav {
+  display: flex;
+  gap: 24px;
+}
+
+header nav a {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+header nav a:hover {
+  color: var(--accent);
+}
+
+.hero {
+  padding: 64px 24px 56px;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hero .eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 14px;
+}
+
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 42px;
+  line-height: 1.2;
+  margin: 0 0 24px;
+  color: var(--ink);
+}
+
+.hero h1 em {
+  font-style: italic;
+}
+
+.hero a.enter-link {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 4px;
+}
+
+.hero a.enter-link:hover {
+  color: var(--accent);
 }
 
 #gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 40px;
+  padding: 48px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .artwork-card {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.artwork-card .frame {
+  background: var(--surface);
+  border: 0.5px solid var(--hairline);
+  padding: 14px;
 }
 
 .artwork-card img {
@@ -36,22 +124,129 @@ header a {
   display: block;
 }
 
-.artwork-card h3, .artwork-card p {
-  margin: 8px 12px;
-}
-.detail-image {
-  max-width: 500px;
-  width: 100%;
-  border-radius: 8px;
-  display: block;
-  margin: 20px;
+.artwork-card .label {
+  border-top: 0.5px solid var(--accent);
+  margin-top: 12px;
+  padding-top: 10px;
 }
 
-.artist-name {
-  font-weight: bold;
-  color: #555;
+.artwork-card .label .artist {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 4px;
+}
+
+.artwork-card .label .title {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink);
+  margin: 0;
 }
 
 #artwork-detail {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  text-align: center;
+}
+
+#artwork-detail .frame {
+  background: var(--surface);
+  border: 0.5px solid var(--hairline);
   padding: 20px;
+  margin-bottom: 20px;
+}
+
+#artwork-detail .detail-image {
+  width: 100%;
+  display: block;
+}
+
+#artwork-detail .label {
+  border-top: 0.5px solid var(--accent);
+  padding-top: 16px;
+  margin-bottom: 20px;
+}
+
+#artwork-detail .artist-name {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+}
+
+#artwork-detail .title {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 26px;
+  color: var(--ink);
+  margin: 0;
+}
+
+#artwork-detail .description {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  margin: 0;
+  text-align: left;
+}
+
+main form {
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
+  margin: 48px auto;
+  gap: 6px;
+  padding: 0 24px;
+}
+
+form label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 18px;
+}
+
+form input,
+form textarea {
+  font-family: 'Inter', sans-serif;
+  padding: 10px 2px;
+  border: none;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+form input:focus,
+form textarea:focus {
+  outline: none;
+  border-bottom: 1px solid var(--accent);
+}
+
+form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+form button {
+  margin-top: 28px;
+  padding: 12px;
+  background: var(--accent);
+  color: #FAFAF8;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+form button:hover {
+  background: #6E2C2C;
 }
