@@ -2,22 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Artsys — Art Gallery</title>
+  <title>Artsys — A Digital Collection</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-  <header>
-    <a href="index.html" class="wordmark">Artsys</a>
+  <header id="site-header">
+    <a href="index.html" class="wordmark">ARTSYS</a>
     <nav>
       <a href="gallery.html">Gallery</a>
       <a href="add-artwork.html">Add work</a>
     </nav>
   </header>
 
-  <section class="hero">
-    <p class="eyebrow">Now exhibiting</p>
-    <h1>A small room<br><em>for careful looking</em></h1>
-    <a href="gallery.html" class="enter-link">Enter Gallery</a>
+  <section class="hero fade-in">
+    <span class="bg-mark">ARTSYS</span>
+    <p class="eyebrow">Current exhibition</p>
+    <h1>Art belongs to<br>the spaces <em>between people</em></h1>
+    <p class="description">A digital collection celebrating contemporary illustration, photography, and visual storytelling.</p>
+    <a href="gallery.html" class="enter-link">Explore Collection →</a>
   </section>
+
+  <section class="featured">
+    <p class="section-label">Featured piece</p>
+    <div id="featured-artwork"></div>
+  </section>
+
+  <footer>
+    <p class="foot-wordmark">ARTSYS</p>
+    <p class="foot-line">Digital Collection · 2026</p>
+    <div class="foot-links">
+      <a href="gallery.html">Gallery</a>
+      <a href="add-artwork.html">Add work</a>
+      <a href="#">Instagram</a>
+      <a href="#">Contact</a>
+    </div>
+    <p class="foot-tag">Curated with care.</p>
+  </footer>
+
+  <script src="scripts/app.js"></script>
 </body>
 </html>
