@@ -3,7 +3,7 @@ const sampleArtworks = [
     id: 1,
     title: "Sunset Over Hills",
     artist: "Dev1",
-    image_url: "https://placehold.co/700x520/EDEBE4/1E1D1A?text=",
+    image_url: "https://wallpaperbat.com/img/19063123-wallpaper-forest-river-sunset-art.jpg",
     description: "A calm evening scene rendered in soft, warm tones — light falling across a quiet ridge line just before dusk.",
     year: "2026",
     medium: "Oil on canvas"
@@ -12,7 +12,7 @@ const sampleArtworks = [
     id: 2,
     title: "City Lights",
     artist: "Dev1",
-    image_url: "https://placehold.co/700x520/EDEBE4/1E1D1A?text=",
+    image_url: "https://wallpaperaccess.com/full/1883962.jpg",
     description: "Downtown at night, seen from a distance — a study in scattered light and long shadow.",
     year: "2026",
     medium: "Digital photography"
@@ -21,7 +21,7 @@ const sampleArtworks = [
     id: 3,
     title: "Quiet Forest",
     artist: "Dev1",
-    image_url: "https://placehold.co/700x520/EDEBE4/1E1D1A?text=",
+    image_url: "https://tse1.explicit.bing.net/th/id/OIP.42y1YXQsBQuFe95n6H6DZQAAAA?r=0&cb=thfc1falcon4&rs=1&pid=ImgDetMain&o=7&rm=3",
     description: "Morning light through trees, captured in the stillness just after dawn.",
     year: "2026",
     medium: "Mixed media"
