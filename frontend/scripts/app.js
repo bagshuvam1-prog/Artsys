@@ -1,3 +1,5 @@
+const API_URL = "http://localhost:3000/artworks";
+
 const sampleArtworks = [
   {
     id: 1,
@@ -6,7 +8,8 @@ const sampleArtworks = [
     image_url: "https://wallpaperbat.com/img/19063123-wallpaper-forest-river-sunset-art.jpg",
     description: "A calm evening scene rendered in soft, warm tones — light falling across a quiet ridge line just before dusk.",
     year: "2026",
-    medium: "Oil on canvas"
+    medium: "Oil on canvas",
+    isFixed: true
   },
   {
     id: 2,
@@ -15,7 +18,8 @@ const sampleArtworks = [
     image_url: "https://wallpaperaccess.com/full/1883962.jpg",
     description: "Downtown at night, seen from a distance — a study in scattered light and long shadow.",
     year: "2026",
-    medium: "Digital photography"
+    medium: "Digital photography",
+    isFixed: true
   },
   {
     id: 3,
@@ -24,7 +28,8 @@ const sampleArtworks = [
     image_url: "https://tse1.explicit.bing.net/th/id/OIP.42y1YXQsBQuFe95n6H6DZQAAAA?r=0&cb=thfc1falcon4&rs=1&pid=ImgDetMain&o=7&rm=3",
     description: "Morning light through trees, captured in the stillness just after dawn.",
     year: "2026",
-    medium: "Mixed media"
+    medium: "Mixed media",
+    isFixed: true
   }
 ];
 
@@ -40,11 +45,24 @@ function setupHeaderScroll() {
   });
 }
 
-function renderFeatured() {
+async function getAllArtworks() {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error("Failed to load artworks");
+    const backendArtworks = await response.json();
+    return [...sampleArtworks, ...backendArtworks];
+  } catch (err) {
+    console.error("Could not reach backend, showing fixed artworks only:", err);
+    return [...sampleArtworks];
+  }
+}
+
+async function renderFeatured() {
   const container = document.getElementById("featured-artwork");
   if (!container) return;
 
-  const artwork = sampleArtworks[0];
+  const artworks = await getAllArtworks();
+  const artwork = artworks[0];
   if (!artwork) return;
 
   container.innerHTML = `
@@ -59,9 +77,11 @@ function renderFeatured() {
   `;
 }
 
-function renderGallery(artworks) {
+async function renderGallery() {
   const grid = document.getElementById("gallery-grid");
   if (!grid) return;
+
+  const artworks = await getAllArtworks();
   grid.innerHTML = "";
 
   artworks.forEach((art, index) => {
@@ -85,19 +105,30 @@ function renderGallery(artworks) {
   });
 }
 
-function renderArtworkDetail() {
+async function renderArtworkDetail() {
   const detailContainer = document.getElementById("artwork-detail");
   if (!detailContainer) return;
 
   const params = new URLSearchParams(window.location.search);
   const id = parseInt(params.get("id"));
-  const index = sampleArtworks.findIndex(art => art.id === id);
-  const artwork = sampleArtworks[index];
+
+  const artworks = await getAllArtworks();
+  const index = artworks.findIndex(art => art.id === id);
+  const artwork = artworks[index];
 
   if (!artwork) {
     detailContainer.innerHTML = "<p>Artwork not found.</p>";
     return;
   }
+
+  const actionButtons = artwork.isFixed
+    ? ""
+    : `
+      <div class="detail-actions">
+        <a href="edit-artwork.html?id=${artwork.id}" class="edit-link">Edit</a>
+        <button id="delete-btn" class="delete-btn" data-id="${artwork.id}">Delete</button>
+      </div>
+    `;
 
   detailContainer.innerHTML = `
     <div class="detail-grid">
@@ -110,20 +141,22 @@ function renderArtworkDetail() {
         <p class="meta-line">${artwork.medium || "Medium unlisted"} · ${artwork.year || "Year unknown"}</p>
         <hr>
         <p class="description">${artwork.description}</p>
+        ${actionButtons}
       </div>
     </div>
   `;
 
-  renderDetailNav(index);
+  renderDetailNav(artworks, index);
+  setupDeleteButton();
 }
 
-function renderDetailNav(index) {
+function renderDetailNav(artworks, index) {
   const navContainer = document.getElementById("detail-nav");
   if (!navContainer) return;
 
-  const total = sampleArtworks.length;
-  const prev = sampleArtworks[(index - 1 + total) % total];
-  const next = sampleArtworks[(index + 1) % total];
+  const total = artworks.length;
+  const prev = artworks[(index - 1 + total) % total];
+  const next = artworks[(index + 1) % total];
   const counter = `${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
 
   navContainer.innerHTML = `
@@ -133,6 +166,32 @@ function renderDetailNav(index) {
       <a href="artwork-detail.html?id=${next.id}">Next →</a>
     </div>
   `;
+}
+
+function setupDeleteButton() {
+  const btn = document.getElementById("delete-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    const confirmed = confirm("Are you sure you want to delete this artwork? This cannot be undone.");
+    if (!confirmed) return;
+
+    const id = btn.getAttribute("data-id");
+
+    try {
+      const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(`Server responded with status ${response.status}: ${errorBody.error || "unknown error"}`);
+      }
+
+      alert("Artwork deleted.");
+      window.location.href = "gallery.html";
+    } catch (err) {
+      alert("Delete failed. Error details: " + err.message);
+    }
+  });
 }
 
 function setupDropzone() {
@@ -181,11 +240,10 @@ function setupAddArtworkForm() {
 
   setupDropzone();
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const newArtwork = {
-      id: sampleArtworks.length + 1,
       title: document.getElementById("title").value,
       artist: document.getElementById("artist").value,
       image_url: document.getElementById("image_url").value || "https://placehold.co/700x520/EDEBE4/1E1D1A?text=",
@@ -194,15 +252,90 @@ function setupAddArtworkForm() {
       medium: "Mixed media"
     };
 
-    sampleArtworks.push(newArtwork);
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newArtwork)
+      });
 
-    alert("Artwork added to the collection! (Temporary — resets until connected to a real backend)");
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(`Server responded with status ${response.status}: ${errorBody.error || "unknown error"}`);
+      }
+
+      alert("Artwork added to the collection!");
+      window.location.href = "gallery.html";
+    } catch (err) {
+      alert("Add failed. Error details: " + err.message);
+    }
+  });
+}
+
+async function setupEditArtworkForm() {
+  const form = document.getElementById("edit-artwork-form");
+  if (!form) return;
+
+  setupDropzone();
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  try {
+    const response = await fetch(`${API_URL}/${id}`);
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      throw new Error(`Server responded with status ${response.status}: ${errorBody.error || "unknown error"}`);
+    }
+
+    const artwork = await response.json();
+
+    document.getElementById("title").value = artwork.title;
+    document.getElementById("artist").value = artwork.artist;
+    document.getElementById("image_url").value = artwork.image_url;
+    document.getElementById("description").value = artwork.description;
+
+    document.getElementById("image_url").dispatchEvent(new Event("input"));
+  } catch (err) {
+    alert("Could not load this artwork for editing. Error details: " + err.message);
     window.location.href = "gallery.html";
+    return;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const updatedArtwork = {
+      title: document.getElementById("title").value,
+      artist: document.getElementById("artist").value,
+      image_url: document.getElementById("image_url").value,
+      description: document.getElementById("description").value
+    };
+
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedArtwork)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(`Server responded with status ${response.status}: ${errorBody.error || "unknown error"}`);
+      }
+
+      alert("Artwork updated!");
+      window.location.href = `artwork-detail.html?id=${id}`;
+    } catch (err) {
+      alert("Save failed. Error details: " + err.message);
+    }
   });
 }
 
 setupHeaderScroll();
 renderFeatured();
-renderGallery(sampleArtworks);
+renderGallery();
 renderArtworkDetail();
 setupAddArtworkForm();
+setupEditArtworkForm();
