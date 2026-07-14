@@ -47,4 +47,39 @@ router.post('/', (req, res) => {
   res.status(201).json(newArtwork);
 });
 
+router.put('/:id', (req, res) => {
+  const artworks = readArtworks();
+  const index = artworks.findIndex(a => a.id === parseInt(req.params.id));
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'Artwork not found' });
+  }
+
+  artworks[index] = {
+    ...artworks[index],
+    title: req.body.title,
+    artist: req.body.artist,
+    image_url: req.body.image_url,
+    description: req.body.description,
+    year: req.body.year || artworks[index].year,
+    medium: req.body.medium || artworks[index].medium
+  };
+
+  writeArtworks(artworks);
+  res.json(artworks[index]);
+});
+
+router.delete('/:id', (req, res) => {
+  const artworks = readArtworks();
+  const index = artworks.findIndex(a => a.id === parseInt(req.params.id));
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'Artwork not found' });
+  }
+
+  const removed = artworks.splice(index, 1);
+  writeArtworks(artworks);
+  res.json(removed[0]);
+});
+
 module.exports = router;

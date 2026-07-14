@@ -585,4 +585,43 @@ footer .foot-tag {
   .artwork-card.card-large { grid-column: span 1; }
   header { padding: 18px 20px; }
   header nav { gap: 18px; }
+  .detail-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.detail-actions .edit-link {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--charcoal);
+  border: 1px solid var(--hairline);
+  padding: 10px 20px;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.detail-actions .edit-link:hover {
+  border-color: var(--burgundy);
+  color: var(--burgundy);
+}
+
+.detail-actions .delete-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--burgundy);
+  color: var(--burgundy);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.detail-actions .delete-btn:hover {
+  background: var(--burgundy);
+  color: var(--ivory);
+}
 }
