@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/bagshuvam1-prog/Artsys#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1"
   }

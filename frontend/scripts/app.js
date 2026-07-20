@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3000/artworks";
+const API_URL = `http://${window.location.hostname}:3000/artworks`;
+const AUTH_URL = `http://${window.location.hostname}:3000/auth`;
 
 const sampleArtworks = [
   {
@@ -173,6 +174,12 @@ function setupDeleteButton() {
   if (!btn) return;
 
   btn.addEventListener("click", async () => {
+    if (!getLoggedInUser()) {
+      alert("You must be signed in to delete artwork.");
+      window.location.href = "signin.html";
+      return;
+    }
+
     const confirmed = confirm("Are you sure you want to delete this artwork? This cannot be undone.");
     if (!confirmed) return;
 
@@ -194,27 +201,38 @@ function setupDeleteButton() {
   });
 }
 
+let uploadedImageData = null;
+
 function setupDropzone() {
   const dropzone = document.getElementById("dropzone");
-  const urlInput = document.getElementById("image_url");
+  const fileInput = document.getElementById("image-file");
   const preview = document.getElementById("image-preview");
   const dropzoneText = document.getElementById("dropzone-text");
-  if (!dropzone || !urlInput) return;
+  if (!dropzone || !fileInput) return;
 
-  function updatePreview() {
-    const url = urlInput.value.trim();
-    if (url) {
-      preview.src = url;
+  function handleFile(file) {
+    if (!file || !file.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImageData = e.target.result;
+      preview.src = uploadedImageData;
       preview.style.display = "block";
       dropzoneText.style.display = "none";
-    } else {
-      preview.style.display = "none";
-      dropzoneText.style.display = "block";
-    }
+      dropzone.querySelector(".browse").style.display = "none";
+    };
+    reader.readAsDataURL(file);
   }
 
-  urlInput.addEventListener("input", updatePreview);
-  dropzone.addEventListener("click", () => urlInput.focus());
+  dropzone.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  });
 
   dropzone.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -226,10 +244,8 @@ function setupDropzone() {
   dropzone.addEventListener("drop", (e) => {
     e.preventDefault();
     dropzone.classList.remove("dragover");
-    const url = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain");
-    if (url) {
-      urlInput.value = url;
-      updatePreview();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
     }
   });
 }
@@ -238,15 +254,27 @@ function setupAddArtworkForm() {
   const form = document.getElementById("add-artwork-form");
   if (!form) return;
 
+  if (!getLoggedInUser()) {
+    alert("You must be signed in to add artwork.");
+    window.location.href = "signin.html";
+    return;
+  }
+
+  uploadedImageData = null;
   setupDropzone();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    if (!uploadedImageData) {
+      alert("Please choose an image before submitting.");
+      return;
+    }
+
     const newArtwork = {
       title: document.getElementById("title").value,
       artist: document.getElementById("artist").value,
-      image_url: document.getElementById("image_url").value || "https://placehold.co/700x520/EDEBE4/1E1D1A?text=",
+      image_url: uploadedImageData,
       description: document.getElementById("description").value,
       year: "2026",
       medium: "Mixed media"
@@ -276,6 +304,12 @@ async function setupEditArtworkForm() {
   const form = document.getElementById("edit-artwork-form");
   if (!form) return;
 
+  if (!getLoggedInUser()) {
+    alert("You must be signed in to edit artwork.");
+    window.location.href = "signin.html";
+    return;
+  }
+
   setupDropzone();
 
   const params = new URLSearchParams(window.location.search);
@@ -293,10 +327,16 @@ async function setupEditArtworkForm() {
 
     document.getElementById("title").value = artwork.title;
     document.getElementById("artist").value = artwork.artist;
-    document.getElementById("image_url").value = artwork.image_url;
     document.getElementById("description").value = artwork.description;
 
-    document.getElementById("image_url").dispatchEvent(new Event("input"));
+    uploadedImageData = artwork.image_url;
+    const preview = document.getElementById("image-preview");
+    const dropzoneText = document.getElementById("dropzone-text");
+    const browseText = document.querySelector(".dropzone .browse");
+    preview.src = uploadedImageData;
+    preview.style.display = "block";
+    dropzoneText.style.display = "none";
+    if (browseText) browseText.style.display = "none";
   } catch (err) {
     alert("Could not load this artwork for editing. Error details: " + err.message);
     window.location.href = "gallery.html";
@@ -309,7 +349,7 @@ async function setupEditArtworkForm() {
     const updatedArtwork = {
       title: document.getElementById("title").value,
       artist: document.getElementById("artist").value,
-      image_url: document.getElementById("image_url").value,
+      image_url: uploadedImageData,
       description: document.getElementById("description").value
     };
 
@@ -333,9 +373,95 @@ async function setupEditArtworkForm() {
   });
 }
 
+function getLoggedInUser() {
+  const stored = localStorage.getItem("artsysUser");
+  return stored ? JSON.parse(stored) : null;
+}
+
+function updateAuthNav() {
+  const el = document.getElementById("auth-status");
+  if (!el) return;
+
+  const user = getLoggedInUser();
+  if (user) {
+    el.innerHTML = `<span class="auth-username">${user.username}</span> <a href="#" id="logout-link">Log out</a>`;
+    document.getElementById("logout-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("artsysUser");
+      window.location.href = "index.html";
+    });
+  } else {
+    el.innerHTML = `<a href="signin.html">Sign in</a>`;
+  }
+}
+
+function setupSignupForm() {
+  const form = document.getElementById("signup-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const newUser = {
+      username: document.getElementById("username").value,
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    };
+
+    try {
+      const response = await fetch(`${AUTH_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser)
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Signup failed");
+
+      localStorage.setItem("artsysUser", JSON.stringify(data));
+      window.location.href = "gallery.html";
+    } catch (err) {
+      alert("Signup failed: " + err.message);
+    }
+  });
+}
+
+function setupSigninForm() {
+  const form = document.getElementById("signin-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const credentials = {
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    };
+
+    try {
+      const response = await fetch(`${AUTH_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials)
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Sign in failed");
+
+      localStorage.setItem("artsysUser", JSON.stringify(data));
+      window.location.href = "gallery.html";
+    } catch (err) {
+      alert("Sign in failed: " + err.message);
+    }
+  });
+}
+
 setupHeaderScroll();
+updateAuthNav();
 renderFeatured();
 renderGallery();
 renderArtworkDetail();
 setupAddArtworkForm();
 setupEditArtworkForm();
+setupSignupForm();
+setupSigninForm();

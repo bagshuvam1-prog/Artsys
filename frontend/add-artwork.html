@@ -2,38 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Artwork — Artsys</title>
-  <link rel="stylesheet" href="styles/main.css">
-</head>
-<body>
-  <header>
-    <a href="index.html" class="wordmark">Artsys</a>
-    <nav>
-      <a href="gallery.html">Back to gallery</a>
-    </nav>
-  </header>
-
-  <main>
-    <form id="add-artwork-form">
-      <label>Title</label>
-      <input type="text" id="title" required>
-
-      <label>Artist</label>
-      <input type="text" id="artist" required>
-
-      <label>Image URL</label>
-      <input type="text" id="image_url" placeholder="https://...">
-
-      <label>Description</label>
-      <textarea id="description"></textarea>
-
-      <button type="submit">Add Artwork</button>
-    </form>
-  </main>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
   <title>Catalogue Artwork — Artsys</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
@@ -42,6 +10,7 @@
     <a href="index.html" class="wordmark">ARTSYS</a>
     <nav>
       <a href="gallery.html">Back to gallery</a>
+      <span id="auth-status"></span>
     </nav>
   </header>
 
@@ -54,9 +23,9 @@
       <div class="dropzone" id="dropzone">
         <img class="preview" id="image-preview" alt="">
         <p id="dropzone-text">Drop artwork here</p>
-        <p class="browse">or paste an image URL below</p>
+        <p class="browse">or click to browse files</p>
       </div>
-      <input type="text" id="image_url" placeholder="https://...">
+      <input type="file" id="image-file" accept="image/*" style="display: none;">
 
       <label>Title</label>
       <input type="text" id="title" required>
@@ -83,9 +52,6 @@
     <p class="foot-tag">Curated with care.</p>
   </footer>
 
-  <script src="scripts/app.js"></script>
-</body>
-</html>
   <script src="scripts/app.js"></script>
 </body>
 </html>
