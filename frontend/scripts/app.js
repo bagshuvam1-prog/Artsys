@@ -1,5 +1,5 @@
-const API_URL = `http://${window.location.hostname}:3000/artworks`;
-const AUTH_URL = `http://${window.location.hostname}:3000/auth`;
+const API_URL = "https://artsys.onrender.com/artworks";
+const AUTH_URL = "https://artsys.onrender.com/auth";
 
 const sampleArtworks = [
   {
