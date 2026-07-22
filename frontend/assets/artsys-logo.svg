@@ -1,0 +1,24 @@
+<svg width="260" height="70" viewBox="0 0 260 70" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .wordmark {
+        font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+        font-size: 34px;
+        letter-spacing: 4px;
+        fill: #2b1a1e;
+      }
+      .accent {
+        fill: #5c1f2e;
+      }
+    </style>
+  </defs>
+
+  <g transform="translate(6, 20)">
+    <path d="M15 0 L26 15 L15 30 L4 15 Z" fill="none" stroke="#5c1f2e" stroke-width="1.6"/>
+    <path d="M15 8 L20 15 L15 22 L10 15 Z" class="accent"/>
+  </g>
+
+  <text x="44" y="44" class="wordmark">ARTSYS</text>
+
+  <line x1="44" y1="52" x2="230" y2="52" stroke="#c9a86a" stroke-width="1"/>
+</svg>

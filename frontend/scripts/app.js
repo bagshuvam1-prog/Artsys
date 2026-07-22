@@ -1,5 +1,6 @@
 const API_URL = "https://artsys.onrender.com/artworks";
 const AUTH_URL = "https://artsys.onrender.com/auth";
+const CURRENCY = "₹";
 
 const sampleArtworks = [
   {
@@ -10,6 +11,7 @@ const sampleArtworks = [
     description: "A calm evening scene rendered in soft, warm tones — light falling across a quiet ridge line just before dusk.",
     year: "2026",
     medium: "Oil on canvas",
+    price: 4500,
     isFixed: true
   },
   {
@@ -20,6 +22,7 @@ const sampleArtworks = [
     description: "Downtown at night, seen from a distance — a study in scattered light and long shadow.",
     year: "2026",
     medium: "Digital photography",
+    price: 3200,
     isFixed: true
   },
   {
@@ -30,6 +33,7 @@ const sampleArtworks = [
     description: "Morning light through trees, captured in the stillness just after dawn.",
     year: "2026",
     medium: "Mixed media",
+    price: 5800,
     isFixed: true
   }
 ];
@@ -51,7 +55,11 @@ async function getAllArtworks() {
     const response = await fetch(API_URL);
     if (!response.ok) throw new Error("Failed to load artworks");
     const backendArtworks = await response.json();
-    return [...sampleArtworks, ...backendArtworks];
+    const withPrices = backendArtworks.map(a => ({
+      ...a,
+      price: a.price || 2000
+    }));
+    return [...sampleArtworks, ...withPrices];
   } catch (err) {
     console.error("Could not reach backend, showing fixed artworks only:", err);
     return [...sampleArtworks];
@@ -131,15 +139,27 @@ async function renderArtworkDetail() {
       </div>
     `;
 
+  const wishlisted = isInWishlist(artwork.id);
+  const inCart = isInCart(artwork.id);
+
   detailContainer.innerHTML = `
     <div class="detail-grid">
       <div class="frame">
         <img src="${artwork.image_url}" alt="${artwork.title}" class="detail-image">
       </div>
       <div class="detail-info">
-        <p class="artist-name">${artwork.artist}</p>
+        <div class="detail-heading-row">
+          <p class="artist-name">${artwork.artist}</p>
+          <button id="wishlist-heart-btn" class="wishlist-heart-btn ${wishlisted ? "active" : ""}" data-id="${artwork.id}" aria-label="Add to wishlist">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="${wishlisted ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.4-9.5-8.5C1 8.5 2.8 5 6.2 5c2 0 3.4 1.2 4.8 3 1.4-1.8 2.8-3 4.8-3 3.4 0 5.2 3.5 3.7 6.5C19 15.6 12 20 12 20z"/></svg>
+          </button>
+        </div>
         <p class="title">${artwork.title}</p>
         <p class="meta-line">${artwork.medium || "Medium unlisted"} · ${artwork.year || "Year unknown"}</p>
+        <p class="price-line">${CURRENCY}${artwork.price.toLocaleString()}</p>
+        <button id="add-to-cart-btn" class="add-to-cart-btn" data-id="${artwork.id}">
+          ${inCart ? "Added to Cart ✓" : "Add to Cart"}
+        </button>
         <hr>
         <p class="description">${artwork.description}</p>
         ${actionButtons}
@@ -149,6 +169,8 @@ async function renderArtworkDetail() {
 
   renderDetailNav(artworks, index);
   setupDeleteButton();
+  setupWishlistHeartButton();
+  setupAddToCartButton();
 }
 
 function renderDetailNav(artworks, index) {
@@ -456,6 +478,269 @@ function setupSigninForm() {
   });
 }
 
+function setupSearch() {
+  const toggleBtn = document.getElementById("search-toggle");
+  const searchBar = document.getElementById("search-bar");
+  const searchInput = document.getElementById("search-input");
+  if (!toggleBtn || !searchBar || !searchInput) return;
+
+  toggleBtn.addEventListener("click", () => {
+    searchBar.classList.toggle("hidden");
+    if (!searchBar.classList.contains("hidden")) {
+      searchInput.focus();
+    }
+  });
+
+  searchInput.addEventListener("input", async () => {
+    const query = searchInput.value.trim().toLowerCase();
+    const grid = document.getElementById("gallery-grid");
+    if (!grid) return;
+
+    const artworks = await getAllArtworks();
+    const filtered = query
+      ? artworks.filter(a =>
+          a.title.toLowerCase().includes(query) ||
+          a.artist.toLowerCase().includes(query)
+        )
+      : artworks;
+
+    grid.innerHTML = "";
+    filtered.forEach((art, index) => {
+      const card = document.createElement("a");
+      card.className = "artwork-card fade-in";
+      if (index % 3 === 0) card.classList.add("card-large");
+      card.href = `artwork-detail.html?id=${art.id}`;
+      card.innerHTML = `
+        <div class="frame">
+          <img src="${art.image_url}" alt="${art.title}">
+        </div>
+        <div class="label">
+          <p class="artist">${art.artist}</p>
+          <p class="title">${art.title}</p>
+          <p class="meta">${art.medium || ""}${art.medium && art.year ? " · " : ""}${art.year || ""}</p>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<p style="padding: 40px; text-align: center; color: #999;">No artworks found.</p>`;
+    }
+  });
+}
+
+function setupAccountDropdown() {
+  const toggleBtn = document.getElementById("account-toggle");
+  const dropdown = document.getElementById("account-dropdown");
+  if (!toggleBtn || !dropdown) return;
+
+  function renderDropdown() {
+    const user = getLoggedInUser();
+    if (user) {
+      dropdown.innerHTML = `
+        <span class="dropdown-username">${user.username}</span>
+        <a href="#" id="dropdown-logout">Log out</a>
+      `;
+    } else {
+      dropdown.innerHTML = `
+        <a href="signin.html">Sign in</a>
+        <a href="signup.html">Create account</a>
+      `;
+    }
+  }
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    renderDropdown();
+    dropdown.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target) && e.target !== toggleBtn) {
+      dropdown.classList.add("hidden");
+    }
+  });
+
+  dropdown.addEventListener("click", (e) => {
+    if (e.target.id === "dropdown-logout") {
+      e.preventDefault();
+      localStorage.removeItem("artsysUser");
+      window.location.href = "index.html";
+    }
+  });
+}
+
+function getWishlist() {
+  const stored = localStorage.getItem("artsysWishlist");
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveWishlist(list) {
+  localStorage.setItem("artsysWishlist", JSON.stringify(list));
+  updateWishlistBadge();
+}
+
+function isInWishlist(id) {
+  return getWishlist().includes(id);
+}
+
+function toggleWishlist(id) {
+  let list = getWishlist();
+  if (list.includes(id)) {
+    list = list.filter(itemId => itemId !== id);
+  } else {
+    list.push(id);
+  }
+  saveWishlist(list);
+  return list.includes(id);
+}
+
+function updateWishlistBadge() {
+  const badge = document.getElementById("wishlist-count");
+  if (!badge) return;
+  badge.textContent = getWishlist().length;
+}
+
+function setupWishlistHeartButton() {
+  const btn = document.getElementById("wishlist-heart-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const id = parseInt(btn.getAttribute("data-id"));
+    const nowActive = toggleWishlist(id);
+    btn.classList.toggle("active", nowActive);
+    const svg = btn.querySelector("svg");
+    svg.setAttribute("fill", nowActive ? "currentColor" : "none");
+  });
+}
+
+async function renderWishlistPage() {
+  const grid = document.getElementById("wishlist-grid");
+  if (!grid) return;
+
+  const wishlistIds = getWishlist();
+  const artworks = await getAllArtworks();
+  const items = artworks.filter(a => wishlistIds.includes(a.id));
+
+  if (items.length === 0) {
+    grid.innerHTML = `<p style="padding: 60px; text-align: center; color: #999;">Your wishlist is empty. Browse the <a href="gallery.html" style="color: var(--burgundy);">gallery</a> to add pieces you love.</p>`;
+    return;
+  }
+
+  grid.innerHTML = "";
+  items.forEach((art, index) => {
+    const card = document.createElement("a");
+    card.className = "artwork-card fade-in";
+    if (index % 3 === 0) card.classList.add("card-large");
+    card.href = `artwork-detail.html?id=${art.id}`;
+    card.innerHTML = `
+      <div class="frame">
+        <img src="${art.image_url}" alt="${art.title}">
+      </div>
+      <div class="label">
+        <p class="artist">${art.artist}</p>
+        <p class="title">${art.title}</p>
+        <p class="meta">${art.medium || ""}${art.medium && art.year ? " · " : ""}${art.year || ""}</p>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function getCart() {
+  const stored = localStorage.getItem("artsysCart");
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveCart(list) {
+  localStorage.setItem("artsysCart", JSON.stringify(list));
+  updateCartBadge();
+}
+
+function isInCart(id) {
+  return getCart().includes(id);
+}
+
+function addToCartItem(id) {
+  let list = getCart();
+  if (!list.includes(id)) {
+    list.push(id);
+    saveCart(list);
+  }
+  return true;
+}
+
+function removeFromCart(id) {
+  let list = getCart().filter(itemId => itemId !== id);
+  saveCart(list);
+}
+
+function updateCartBadge() {
+  const badge = document.getElementById("cart-count");
+  if (!badge) return;
+  badge.textContent = getCart().length;
+}
+
+function setupAddToCartButton() {
+  const btn = document.getElementById("add-to-cart-btn");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const id = parseInt(btn.getAttribute("data-id"));
+    addToCartItem(id);
+    btn.textContent = "Added to Cart ✓";
+    btn.classList.add("in-cart");
+  });
+}
+
+async function renderCartPage() {
+  const container = document.getElementById("cart-items");
+  if (!container) return;
+
+  const cartIds = getCart();
+  const artworks = await getAllArtworks();
+  const items = artworks.filter(a => cartIds.includes(a.id));
+
+  const subtotalEl = document.getElementById("cart-subtotal");
+
+  if (items.length === 0) {
+    container.innerHTML = `<p style="padding: 60px; text-align: center; color: #999;">Your cart is empty. Browse the <a href="gallery.html" style="color: var(--burgundy);">gallery</a> to find something you love.</p>`;
+    if (subtotalEl) subtotalEl.textContent = `${CURRENCY}0`;
+    return;
+  }
+
+  let subtotal = 0;
+  container.innerHTML = "";
+
+  items.forEach(art => {
+    subtotal += art.price;
+    const row = document.createElement("div");
+    row.className = "cart-row";
+    row.innerHTML = `
+      <a href="artwork-detail.html?id=${art.id}" class="cart-row-image">
+        <img src="${art.image_url}" alt="${art.title}">
+      </a>
+      <div class="cart-row-info">
+        <p class="cart-row-artist">${art.artist}</p>
+        <p class="cart-row-title">${art.title}</p>
+        <p class="cart-row-price">${CURRENCY}${art.price.toLocaleString()}</p>
+      </div>
+      <button class="cart-remove-btn" data-id="${art.id}">Remove</button>
+    `;
+    container.appendChild(row);
+  });
+
+  if (subtotalEl) subtotalEl.textContent = `${CURRENCY}${subtotal.toLocaleString()}`;
+
+  container.querySelectorAll(".cart-remove-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-id"));
+      removeFromCart(id);
+      renderCartPage();
+    });
+  });
+}
+
 setupHeaderScroll();
 updateAuthNav();
 renderFeatured();
@@ -465,3 +750,9 @@ setupAddArtworkForm();
 setupEditArtworkForm();
 setupSignupForm();
 setupSigninForm();
+setupSearch();
+setupAccountDropdown();
+updateWishlistBadge();
+renderWishlistPage();
+updateCartBadge();
+renderCartPage();

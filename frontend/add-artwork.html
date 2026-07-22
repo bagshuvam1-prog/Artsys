@@ -7,7 +7,33 @@
 </head>
 <body>
   <header id="site-header">
-    <a href="index.html" class="wordmark">ARTSYS</a>
+    <div class="header-left">
+      <a href="index.html" class="wordmark">
+        <img src="assets/artsys-logo.svg" alt="Artsys" style="height: 40px; display: block;">
+      </a>
+      <div class="header-icons">
+        <button id="search-toggle" class="icon-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div class="account-wrapper">
+          <button id="account-toggle" class="icon-btn" aria-label="Account">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+          </button>
+          <div id="account-dropdown" class="account-dropdown hidden"></div>
+        </div>
+        <a href="wishlist.html" class="icon-btn" aria-label="Wishlist">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.4-9.5-8.5C1 8.5 2.8 5 6.2 5c2 0 3.4 1.2 4.8 3 1.4-1.8 2.8-3 4.8-3 3.4 0 5.2 3.5 3.7 6.5C19 15.6 12 20 12 20z"/></svg>
+          <span id="wishlist-count" class="badge">0</span>
+        </a>
+        <a href="cart.html" class="icon-btn" aria-label="Cart">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.5 12.5a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
+          <span id="cart-count" class="badge">0</span>
+        </a>
+      </div>
+      <div id="search-bar" class="search-bar hidden">
+        <input type="text" id="search-input" placeholder="Search artworks or artists…">
+      </div>
+    </div>
     <nav>
       <a href="gallery.html">Back to gallery</a>
       <span id="auth-status"></span>
