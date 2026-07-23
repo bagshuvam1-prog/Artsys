@@ -491,42 +491,67 @@ function setupSearch() {
     }
   });
 
-  searchInput.addEventListener("input", async () => {
-    const query = searchInput.value.trim().toLowerCase();
-    const grid = document.getElementById("gallery-grid");
-    if (!grid) return;
+  const grid = document.getElementById("gallery-grid");
 
-    const artworks = await getAllArtworks();
-    const filtered = query
-      ? artworks.filter(a =>
-          a.title.toLowerCase().includes(query) ||
-          a.artist.toLowerCase().includes(query)
-        )
-      : artworks;
-
-    grid.innerHTML = "";
-    filtered.forEach((art, index) => {
-      const card = document.createElement("a");
-      card.className = "artwork-card fade-in";
-      if (index % 3 === 0) card.classList.add("card-large");
-      card.href = `artwork-detail.html?id=${art.id}`;
-      card.innerHTML = `
-        <div class="frame">
-          <img src="${art.image_url}" alt="${art.title}">
-        </div>
-        <div class="label">
-          <p class="artist">${art.artist}</p>
-          <p class="title">${art.title}</p>
-          <p class="meta">${art.medium || ""}${art.medium && art.year ? " · " : ""}${art.year || ""}</p>
-        </div>
-      `;
-      grid.appendChild(card);
+  if (grid) {
+    searchInput.addEventListener("input", () => {
+      filterGalleryGrid(searchInput.value);
     });
 
-    if (filtered.length === 0) {
-      grid.innerHTML = `<p style="padding: 40px; text-align: center; color: #999;">No artworks found.</p>`;
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get("q");
+    if (initialQuery) {
+      searchInput.value = initialQuery;
+      searchBar.classList.remove("hidden");
+      filterGalleryGrid(initialQuery);
     }
+  } else {
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const query = searchInput.value.trim();
+        window.location.href = query
+          ? `gallery.html?q=${encodeURIComponent(query)}`
+          : "gallery.html";
+      }
+    });
+  }
+}
+
+async function filterGalleryGrid(query) {
+  const grid = document.getElementById("gallery-grid");
+  if (!grid) return;
+
+  const trimmedQuery = query.trim().toLowerCase();
+  const artworks = await getAllArtworks();
+  const filtered = trimmedQuery
+    ? artworks.filter(a =>
+        a.title.toLowerCase().includes(trimmedQuery) ||
+        a.artist.toLowerCase().includes(trimmedQuery)
+      )
+    : artworks;
+
+  grid.innerHTML = "";
+  filtered.forEach((art, index) => {
+    const card = document.createElement("a");
+    card.className = "artwork-card fade-in";
+    if (index % 3 === 0) card.classList.add("card-large");
+    card.href = `artwork-detail.html?id=${art.id}`;
+    card.innerHTML = `
+      <div class="frame">
+        <img src="${art.image_url}" alt="${art.title}">
+      </div>
+      <div class="label">
+        <p class="artist">${art.artist}</p>
+        <p class="title">${art.title}</p>
+        <p class="meta">${art.medium || ""}${art.medium && art.year ? " · " : ""}${art.year || ""}</p>
+      </div>
+    `;
+    grid.appendChild(card);
   });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<p style="padding: 40px; text-align: center; color: #999;">No artworks found.</p>`;
+  }
 }
 
 function setupAccountDropdown() {
